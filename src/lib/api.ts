@@ -26,7 +26,7 @@ async function refreshAccessToken(): Promise<string | null> {
   const { refresh } = getTokens();
   if (!refresh) return null;
   try {
-    const res = await fetch(`${API_BASE}/dashboard/auth/refresh/`, {
+    const res = await fetch(`${API_BASE}/v1/auth/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -97,7 +97,7 @@ export interface DashboardUser {
 }
 
 export function login(username: string, password: string) {
-  return apiFetch<LoginResponse>("/dashboard/auth/login/", {
+  return apiFetch<LoginResponse>("/v1/auth/login/", {
     method: "POST",
     body: JSON.stringify({ username, password }),
   });
@@ -117,7 +117,7 @@ export interface DashboardStats {
 }
 
 export function fetchStats() {
-  return apiFetch<DashboardStats>("/dashboard/stats/");
+  return apiFetch<DashboardStats>("/v1/stats/");
 }
 
 // ── Trends ──
@@ -133,7 +133,7 @@ export function fetchTrends(start?: string, end?: string) {
   if (start) params.set("start", start);
   if (end) params.set("end", end);
   const qs = params.toString();
-  return apiFetch<{ series: TrendPoint[] }>(`/dashboard/trends/${qs ? `?${qs}` : ""}`);
+  return apiFetch<{ series: TrendPoint[] }>(`/v1/trends/${qs ? `?${qs}` : ""}`);
 }
 
 // ── Activities ──
@@ -157,7 +157,7 @@ export interface PaginatedActivities {
 }
 
 export function fetchActivities(page = 1, limit = 20) {
-  return apiFetch<PaginatedActivities>(`/dashboard/activities/?page=${page}&limit=${limit}`);
+  return apiFetch<PaginatedActivities>(`/v1/activities/?page=${page}&limit=${limit}`);
 }
 
 // ── Onboarding ──
@@ -175,7 +175,7 @@ export interface OnboardingStatus {
 }
 
 export function fetchOnboarding() {
-  return apiFetch<OnboardingStatus>("/dashboard/onboarding/");
+  return apiFetch<OnboardingStatus>("/v1/onboarding/");
 }
 
 // ── Vendors ──
@@ -193,22 +193,22 @@ export interface Vendor {
 }
 
 export function fetchVendors() {
-  return apiFetch<Vendor[]>("/dashboard/vendors/");
+  return apiFetch<Vendor[]>("/v1/vendors/");
 }
 
 export function fetchVendor(id: string) {
-  return apiFetch<Vendor>(`/dashboard/vendors/${id}/`);
+  return apiFetch<Vendor>(`/v1/vendors/${id}/`);
 }
 
 export function createVendor(data: { name: string; contact_email: string; can_write_back?: boolean; status?: string }) {
-  return apiFetch<Vendor>("/dashboard/vendors/", {
+  return apiFetch<Vendor>("/v1/vendors/", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export function updateVendor(id: string, data: Partial<Vendor>) {
-  return apiFetch<Vendor>(`/dashboard/vendors/${id}/`, {
+  return apiFetch<Vendor>(`/v1/vendors/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
@@ -226,7 +226,7 @@ export interface VendorStats {
 }
 
 export function fetchVendorStats(id: string) {
-  return apiFetch<VendorStats>(`/dashboard/vendors/${id}/stats/`);
+  return apiFetch<VendorStats>(`/v1/vendors/${id}/stats/`);
 }
 
 // ── Vendor Activities ──
@@ -240,7 +240,7 @@ export interface VendorActivity {
 
 export function fetchVendorActivities(id: string, page = 1, limit = 20) {
   return apiFetch<{ results: VendorActivity[]; total: number; page: number; limit: number }>(
-    `/dashboard/vendors/${id}/activities/?page=${page}&limit=${limit}`
+    `/v1/vendors/${id}/activities/?page=${page}&limit=${limit}`
   );
 }
 
@@ -253,7 +253,7 @@ export interface GeneratedToken {
 }
 
 export function generateVendorToken(id: string) {
-  return apiFetch<GeneratedToken>(`/dashboard/vendors/${id}/generate-token/`, {
+  return apiFetch<GeneratedToken>(`/v1/vendors/${id}/generate-token/`, {
     method: "POST",
   });
 }
@@ -261,11 +261,11 @@ export function generateVendorToken(id: string) {
 // ── Users ──
 
 export function fetchUsers() {
-  return apiFetch<DashboardUser[]>("/dashboard/users/");
+  return apiFetch<DashboardUser[]>("/v1/users/");
 }
 
 export function fetchUser(id: string) {
-  return apiFetch<DashboardUser>(`/dashboard/users/${id}/`);
+  return apiFetch<DashboardUser>(`/v1/users/${id}/`);
 }
 
 export function createUser(data: {
@@ -278,21 +278,21 @@ export function createUser(data: {
   password: string;
   vendor?: string;
 }) {
-  return apiFetch<DashboardUser>("/dashboard/users/", {
+  return apiFetch<DashboardUser>("/v1/users/", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export function updateUser(id: string, data: Partial<DashboardUser>) {
-  return apiFetch<DashboardUser>(`/dashboard/users/${id}/`, {
+  return apiFetch<DashboardUser>(`/v1/users/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function deleteUser(id: string) {
-  return apiFetch<void>(`/dashboard/users/${id}/`, { method: "DELETE" });
+  return apiFetch<void>(`/v1/users/${id}/`, { method: "DELETE" });
 }
 
 // ── FHIR ──
