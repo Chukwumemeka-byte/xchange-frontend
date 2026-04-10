@@ -1,0 +1,18 @@
+export const chartData = [
+    { day: "Aug 01", households: 500, persons: 300 },
+    { day: "Aug 03", households: 650, persons: 310 },
+    { day: "Aug 05", households: 850, persons: 315 },
+    { day: "Aug 07", households: 780, persons: 280 },
+    { day: "Aug 09", households: 820, persons: 220 },
+    { day: "Aug 11", households: 1100, persons: 280 },
+    { day: "Aug 13", households: 1050, persons: 270 },
+    { day: "Aug 15", households: 1020, persons: 290 },
+    { day: "Aug 17", households: 750, persons: 380 },
+    { day: "Aug 19", households: 950, persons: 410 },
+    { day: "Aug 21", households: 1300, persons: 350 },
+    { day: "Aug 23", households: 850, persons: 280 },
+    { day: "Aug 25", households: 920, persons: 330 },
+    { day: "Aug 27", households: 780, persons: 340 },
+    { day: "Aug 29", households: 1150, persons: 290 },
+    { day: "Aug 31", households: 1250, persons: 250 },
+];
