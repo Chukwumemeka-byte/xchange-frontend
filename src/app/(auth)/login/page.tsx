@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { useLogin } from "@/hooks/use-auth";
 
 const formSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }),
+    username: z.string().min(1, { message: "Username is required" }),
     password: z.string().min(6, { message: "Password must be at least 6 characters" }),
     rememberMe: z.boolean(),
 });
@@ -36,7 +36,7 @@ export default function LoginPage() {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "",
+            username: "",
             password: "",
             rememberMe: false,
         },
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
     const onSubmit = (values: FormValues) => {
         loginMutation.mutate(
-            { username: values.email, password: values.password },
+            { username: values.username, password: values.password },
             {
                 onSuccess: () => toast.success("Login successful!"),
                 onError: (err) => toast.error(err.message || "Invalid credentials"),
@@ -115,15 +115,15 @@ export default function LoginPage() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
                                 control={form.control}
-                                name="email"
+                                name="username"
                                 render={({ field }) => (
                                     <FormItem className="space-y-1.5">
-                                        <FormLabel className="text-[14px] font-semibold text-[#060B1E]">Email</FormLabel>
+                                        <FormLabel className="text-[14px] font-semibold text-[#060B1E]">Username</FormLabel>
                                         <FormControl>
                                             <div className="relative">
-                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-black/20" />
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-black/20" />
                                                 <Input
-                                                    placeholder="johndoe@mail.com"
+                                                    placeholder="Enter your username"
                                                     {...field}
                                                     className="pl-12 h-14 bg-white border-black/10 rounded-xl focus:border-[#129426] focus:ring-1 focus:ring-[#129426] transition-all text-[15px] font-medium placeholder:text-black/20"
                                                 />
