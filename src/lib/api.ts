@@ -124,8 +124,11 @@ export function fetchStats() {
 
 export interface TrendPoint {
   date: string;
-  households: number;
-  persons: number;
+  total_activities: number;
+  successful_activities: number;
+  failed_activities: number;
+  records_processed: number;
+  records_affected: number;
 }
 
 export function fetchTrends(start?: string, end?: string) {
@@ -139,14 +142,24 @@ export function fetchTrends(start?: string, end?: string) {
 // ── Activities ──
 
 export interface ActivityItem {
-  activity_id: string;
-  timestamp: string;
-  tool: string;
-  action: string;
+  id: string;
+  vendor: string;
+  vendor_name: string;
+  activity_type: string;
+  activity_type_display: string;
   status: string;
-  method: string;
-  path: string;
-  status_code: number;
+  status_display: string;
+  endpoint: string;
+  http_method: string;
+  http_status_code: number | null;
+  resource_type: string | null;
+  resource_ids: string[];
+  records_processed: number;
+  records_affected: number;
+  error_message: string | null;
+  duration_ms: number;
+  timestamp: string;
+  created_at: string;
 }
 
 export interface PaginatedActivities {

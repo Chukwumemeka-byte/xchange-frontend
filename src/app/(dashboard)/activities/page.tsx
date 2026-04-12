@@ -83,25 +83,31 @@ export default function ActivitiesPage() {
                                 )}
                                 {activities.map((act, i) => (
                                     <tr key={i} className="hover:bg-gray-50/30 transition-all whitespace-nowrap group">
-                                        <td className="px-8 py-6 font-semibold text-[#326D8E] text-[14px] cursor-pointer hover:underline underline-offset-4 decoration-2">{act.activity_id}</td>
+                                        <td className="px-8 py-6 font-semibold text-[#326D8E] text-[14px] cursor-pointer hover:underline underline-offset-4 decoration-2">{act.id}</td>
                                         <td className="px-8 py-6 font-bold text-[#060B1E] text-[14px]">{new Date(act.timestamp).toLocaleString()}</td>
                                         <td className="px-8 py-6">
                                             <Badge className={cn(
                                                 "rounded-full font-bold text-[10px] uppercase tracking-wider border-none px-3 py-1.5 min-w-[100px] justify-center",
-                                                act.action === "Upload" ? "bg-[#C6EDE5] text-[#129426]" :
-                                                    act.action === "Download" ? "bg-[#F0F2FE] text-[#7B86EA]" :
+                                                act.activity_type === "data_submission" ? "bg-[#C6EDE5] text-[#129426]" :
+                                                    act.activity_type === "translation" ? "bg-[#F0F2FE] text-[#7B86EA]" :
                                                         "bg-[#FFF8E6] text-[#F3C13D]"
                                             )}>
-                                                {act.action}
+                                                {act.activity_type_display}
                                             </Badge>
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className={cn(
                                                 "flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold w-fit uppercase tracking-wider",
-                                                act.status === "Successful" ? "bg-[#C6EDE5] text-[#129426]" : "bg-[#FFEBEF] text-[#DF1C41]"
+                                                act.status === "success" ? "bg-[#C6EDE5] text-[#129426]" : 
+                                                act.status === "processing" ? "bg-blue-50 text-blue-600" :
+                                                "bg-[#FFEBEF] text-[#DF1C41]"
                                             )}>
-                                                <div className={cn("w-1.5 h-1.5 rounded-full", act.status === "Successful" ? "bg-[#129426]" : "bg-[#DF1C41]")} />
-                                                {act.status}
+                                                <div className={cn("w-1.5 h-1.5 rounded-full", 
+                                                    act.status === "success" ? "bg-[#129426]" : 
+                                                    act.status === "processing" ? "bg-blue-400" :
+                                                    "bg-[#DF1C41]"
+                                                )} />
+                                                {act.status_display}
                                             </div>
                                         </td>
                                     </tr>

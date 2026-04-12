@@ -8,7 +8,11 @@ import {
     ArrowDownRight,
     RefreshCcw,
     Calendar,
-    HelpCircle
+    HelpCircle,
+    Download,
+    Users,
+    Layers,
+    CheckCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,18 +68,38 @@ function AdminDashboard() {
 
     return (
         <div className="space-y-6 pb-10">
-            {/* Top Stats Grid (4 cards) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard title="Total Records" value={statsLoading ? "..." : (stats?.total_records ?? 0).toLocaleString()} percentage="10.5%" trend="up" subValue={`+${stats?.total_records ?? 0}`} subLabel="total" />
-                <StatsCard title="Records Pulled" value={statsLoading ? "..." : (stats?.records_pulled ?? 0).toLocaleString()} percentage="3.4%" trend="up" subValue={`${stats?.records_pulled ?? 0}`} subLabel="pulled" />
-                <StatsCard title="Active Vendors" value={statsLoading ? "..." : (stats?.active_vendors ?? 0).toLocaleString()} percentage="15.2%" trend="down" subValue={`${stats?.active_vendors ?? 0}`} subLabel="active" />
-                <StatsCard title="Total Vendors" value={statsLoading ? "..." : (stats?.total_vendors ?? 0).toLocaleString()} percentage="0.5%" trend="down" subValue={`${stats?.total_vendors ?? 0}`} subLabel="total" />
-            </div>
+            {/* Stats Grid - Organized in 3 columns for better fit */}
+            {/* Stats Grid - 6-column system for 3-3-2 distribution */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                {/* Row 1: 3 cards (span 2 each) */}
+                <div className="lg:col-span-2">
+                    <StatsCard title="Total Records" icon={<Layers size={14} />} value={statsLoading ? "..." : (stats?.total_records ?? 0).toLocaleString()} percentage="10.5%" trend="up" subValue={`+${stats?.total_records ?? 0}`} subLabel="total" />
+                </div>
+                <div className="lg:col-span-2">
+                    <StatsCard title="Total Households" icon={<Layers size={14} />} value={statsLoading ? "..." : (stats?.total_households ?? 0).toLocaleString()} percentage="8.2%" trend="up" subValue={`${stats?.total_households ?? 0}`} subLabel="households" />
+                </div>
+                <div className="lg:col-span-2">
+                    <StatsCard title="Records Pulled" icon={<RefreshCcw size={14} />} value={statsLoading ? "..." : (stats?.records_pulled ?? 0).toLocaleString()} percentage="3.4%" trend="up" subValue={`${stats?.records_pulled ?? 0}`} subLabel="pulled" />
+                </div>
 
-            {/* Middle Stats Grid (2 cards) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <StatsCard title="API Uptime" value={statsLoading ? "..." : `${(stats?.api_uptime_pct ?? 0).toFixed(2)}%`} percentage="10.5%" trend="up" subValue="Uptime" subLabel="last 30 days" />
-                <StatsCard title="Submissions" value={statsLoading ? "..." : (stats?.submissions_count ?? 0).toLocaleString()} percentage="0.5%" trend="up" subValue={`${stats?.downloads_count ?? 0}`} subLabel="downloads" />
+                {/* Row 2: 3 cards (span 2 each) */}
+                <div className="lg:col-span-2">
+                    <StatsCard title="Download Count" icon={<Download size={14} />} value={statsLoading ? "..." : (stats?.downloads_count ?? 0).toLocaleString()} percentage="5.1%" trend="up" subValue={`${stats?.downloads_count ?? 0}`} subLabel="downloads" />
+                </div>
+                <div className="lg:col-span-2">
+                    <StatsCard title="Active Vendors" icon={<Users size={14} />} value={statsLoading ? "..." : (stats?.active_vendors ?? 0).toLocaleString()} percentage="15.2%" trend="down" subValue={`${stats?.active_vendors ?? 0}`} subLabel="active" />
+                </div>
+                <div className="lg:col-span-2">
+                    <StatsCard title="Total Vendors" icon={<Users size={14} />} value={statsLoading ? "..." : (stats?.total_vendors ?? 0).toLocaleString()} percentage="0.5%" trend="down" subValue={`${stats?.total_vendors ?? 0}`} subLabel="total" />
+                </div>
+
+                {/* Row 3: 2 cards spanning evenly (span 3 each) */}
+                <div className="lg:col-span-3">
+                    <StatsCard title="API Uptime" icon={<Activity size={14} />} value={statsLoading ? "..." : `${(stats?.api_uptime_pct ?? 0).toFixed(2)}%`} percentage="10.5%" trend="up" subValue="Uptime" subLabel="last 30 days" />
+                </div>
+                <div className="lg:col-span-3">
+                    <StatsCard title="Submissions" icon={<CheckCircle size={14} />} value={statsLoading ? "..." : (stats?.submissions_count ?? 0).toLocaleString()} percentage="0.5%" trend="up" subValue={`${stats?.submissions_count ?? 0}`} subLabel="count" />
+                </div>
             </div>
 
             {/* Chart Section */}
@@ -122,8 +146,30 @@ function UserDashboard() {
 }
 
 function TrendsChart({ series, title }: { series: TrendPoint[]; title: string }) {
-    const maxVal = 2000;
-    const chartData = series.length > 0 ? series : Array.from({ length: 12 }, (_, i) => ({ date: `2025-${String(i + 1).padStart(2, "0")}-01`, households: 0, persons: 0 }));
+    const chartData: TrendPoint[] = series.length > 0 ? series : Array.from({ length: 12 }, (_, i) => ({ 
+        date: `2025-${String(i + 1).padStart(2, "0")}-01`, 
+        total_activities: 0, 
+        records_processed: 0,
+        successful_activities: 0,
+        failed_activities: 0,
+        records_affected: 0
+    }));
+
+    // Calculate dynamic max value for scaling
+    const allValues = chartData.flatMap(d => [
+        Number(d.total_activities) || 0, 
+        Number(d.records_processed) || 0
+    ]);
+    const maxDataVal = Math.max(...allValues, 0);
+    const maxVal = Math.max(Math.ceil((maxDataVal * 1.2) / 10) * 10, 10);
+    
+    // Generate scale labels
+    const scaleLabels = [
+        maxVal,
+        Math.floor(maxVal * 0.6),
+        Math.floor(maxVal * 0.2),
+        0
+    ];
 
     return (
         <div className="p-[3px] border border-[#DFE1E6] rounded-[28px] bg-white">
@@ -131,14 +177,14 @@ function TrendsChart({ series, title }: { series: TrendPoint[]; title: string })
                 <div className="flex justify-between items-center mb-8">
                     <h3 className="text-[24px] font-semibold text-[#060B1E] leading-[130%] font-interTight">{title}</h3>
                     <div className="flex items-center gap-6 text-[12px] font-semibold uppercase tracking-[0.02em] text-[#060B1E]/60 font-interTight">
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#129426]" /> Households</div>
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#FFBD4C]" /> Persons</div>
+                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#129426]" /> Activities</div>
+                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#FFBD4C]" /> Records</div>
                     </div>
                 </div>
 
                 <div className="relative h-72 w-full mt-4">
                     <div className="absolute -left-2 top-0 bottom-0 flex flex-col justify-between text-[11px] font-semibold text-[#060B1E]/40 uppercase tracking-widest text-right w-12 pr-4 z-10 pointer-events-none">
-                        <span>2000</span><span>1200</span><span>400</span><span>0</span>
+                        {scaleLabels.map(label => <span key={label}>{label}</span>)}
                     </div>
 
                     <div className="absolute inset-0 ml-10">
@@ -157,12 +203,12 @@ function TrendsChart({ series, title }: { series: TrendPoint[]; title: string })
                                     <stop offset="100%" stopColor="#FFBD4C" stopOpacity="0" />
                                 </linearGradient>
                             </defs>
-                            {chartData.length > 1 && (
+                            {chartData.length > 0 && (
                                 <>
-                                    <path d={`${buildPath(chartData, "households", maxVal)} L 1000 288 L 0 288 Z`} fill="url(#hg)" />
-                                    <path d={buildPath(chartData, "households", maxVal)} fill="none" stroke="#129426" strokeWidth="2" />
-                                    <path d={`${buildPath(chartData, "persons", maxVal)} L 1000 288 L 0 288 Z`} fill="url(#pg)" />
-                                    <path d={buildPath(chartData, "persons", maxVal)} fill="none" stroke="#FFBD4C" strokeWidth="2" />
+                                    <path d={`${buildPath(chartData, "total_activities", maxVal)} L 1000 288 L 0 288 Z`} fill="url(#hg)" />
+                                    <path d={buildPath(chartData, "total_activities", maxVal)} fill="none" stroke="#129426" strokeWidth="2" />
+                                    <path d={`${buildPath(chartData, "records_processed", maxVal)} L 1000 288 L 0 288 Z`} fill="url(#pg)" />
+                                    <path d={buildPath(chartData, "records_processed", maxVal)} fill="none" stroke="#FFBD4C" strokeWidth="2" />
                                 </>
                             )}
                         </svg>
@@ -180,16 +226,26 @@ function TrendsChart({ series, title }: { series: TrendPoint[]; title: string })
     );
 }
 
-function buildPath(data: TrendPoint[], key: "households" | "persons", maxVal: number) {
+function buildPath(data: TrendPoint[], key: keyof TrendPoint, maxVal: number) {
     const len = data.length;
     if (len === 0) return "";
-    const step = 1000 / (len - 1 || 1);
+    
+    // Handle single point case by extending it across the chart
+    if (len === 1) {
+        const val = typeof data[0][key] === "number" ? data[0][key] as number : 0;
+        const y = 288 - (val / maxVal * 288);
+        return `M 0 ${y} L 1000 ${y}`;
+    }
+
+    const step = 1000 / (len - 1);
     return data.reduce((acc, d, i) => {
-        const y = 288 - (d[key] / maxVal * 288);
+        const val = typeof d[key] === "number" ? d[key] as number : 0;
+        const y = 288 - (val / maxVal * 288);
         const x = i * step;
         if (i === 0) return `M ${x} ${y}`;
         const px = (i - 1) * step;
-        const py = 288 - (data[i - 1][key] / maxVal * 288);
+        const prevVal = typeof data[i - 1][key] === "number" ? data[i - 1][key] as number : 0;
+        const py = 288 - (prevVal / maxVal * 288);
         const cx1 = (px + x) / 2;
         return `${acc} C ${cx1} ${py}, ${cx1} ${y}, ${x} ${y}`;
     }, "");
@@ -200,12 +256,13 @@ interface StatsCardProps {
     value: string;
     percentage: string;
     trend: "up" | "down";
+    icon?: React.ReactNode;
     subValue?: string;
     subLabel?: string;
     hideTrendIcon?: boolean;
 }
 
-function StatsCard({ title, value, percentage, trend, subValue, subLabel, hideTrendIcon }: StatsCardProps) {
+function StatsCard({ title, value, percentage, trend, icon, subValue, subLabel, hideTrendIcon }: StatsCardProps) {
     const isUp = trend === "up";
     return (
         <div className="p-[3px] border border-[#DFE1E6] rounded-[28px] bg-white group hover:shadow-md transition-all">
@@ -213,7 +270,7 @@ function StatsCard({ title, value, percentage, trend, subValue, subLabel, hideTr
                 <div className="flex justify-between items-start mb-2">
                     <p className="text-[12px] text-[#060B1E]/40 font-semibold tracking-[0.02em] font-interTight leading-[150%] uppercase">{title}</p>
                     <div className="w-8 h-8 border-[1.5px] border-[#129426]/20 rounded-xl bg-gray-50 flex items-center justify-center text-[#129426] transition-colors">
-                        <Activity size={14} />
+                        {icon || <Activity size={14} />}
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -266,26 +323,23 @@ function RecentActivities({ activities, showVendor }: { activities: ActivityItem
                             )}
                             {activities.map((act, i) => (
                                 <tr key={i} className="hover:bg-gray-50/50 transition-all group whitespace-nowrap">
-                                    <td className="px-6 py-4 font-semibold text-[#326D8E] leading-[150%] tracking-[0.02em] cursor-pointer group-hover:underline decoration-2 underline-offset-4">{act.activity_id}</td>
+                                    <td className="px-6 py-4 font-semibold text-[#326D8E] leading-[150%] tracking-[0.02em] cursor-pointer group-hover:underline decoration-2 underline-offset-4">{act.id}</td>
                                     <td className="px-6 py-4 font-semibold text-[#060B1E] leading-[150%] tracking-[0.02em]">{new Date(act.timestamp).toLocaleString()}</td>
-                                    {showVendor && <td className="px-6 py-4 text-[#060B1E] font-semibold leading-[150%] tracking-[0.02em]">{act.tool}</td>}
-                                    <td className="px-6 py-4">
-                                        <div className={cn(
-                                            "rounded-full font-medium text-[11px] px-2 py-0.5 flex justify-center w-fit border",
-                                            act.action === "Upload" ? "bg-[#E7FEF8] text-[#287F6E] border-[#287F6E]/10" :
-                                                act.action === "Download" ? "bg-[#E0E7FF] text-[#4338CA] border-[#4338CA]/10" :
-                                                    "bg-[#FFF7ED] text-[#F97316] border-[#F97316]/10"
-                                        )}>
-                                            {act.action}
-                                        </div>
-                                    </td>
+                                    {showVendor && <td className="px-6 py-4 text-[#060B1E] font-semibold leading-[150%] tracking-[0.02em]">{act.vendor_name}</td>}
+                                    <td className="px-6 py-4 text-[#060B1E]/60 font-medium">{act.activity_type_display}</td>
                                     <td className="px-6 py-4">
                                         <div className={cn(
                                             "flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full w-fit border",
-                                            act.status === "Successful" ? "bg-[#E7FEF8] text-[#287F6E] border-[#287F6E]/10" : "bg-[#FFEBEF] text-[#DF1C41] border-[#DF1C41]/10"
+                                            act.status === "success" ? "bg-[#E7FEF8] text-[#287F6E] border-[#287F6E]/10" : 
+                                            act.status === "processing" ? "bg-blue-50 text-blue-600 border-blue-600/10" :
+                                            "bg-[#FFEBEF] text-[#DF1C41] border-[#DF1C41]/10"
                                         )}>
-                                            <div className={cn("w-1 h-1 rounded-full", act.status === "Successful" ? "bg-[#40C4AA]" : "bg-[#DF1C41]")} />
-                                            <span>{act.status}</span>
+                                            <div className={cn("w-1 h-1 rounded-full", 
+                                                act.status === "success" ? "bg-[#40C4AA]" : 
+                                                act.status === "processing" ? "bg-blue-400" : 
+                                                "bg-[#DF1C41]"
+                                            )} />
+                                            <span>{act.status_display}</span>
                                         </div>
                                     </td>
                                 </tr>
