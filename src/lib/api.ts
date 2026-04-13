@@ -231,11 +231,22 @@ export function updateVendor(id: string, data: Partial<Vendor>) {
 
 export interface VendorStats {
   vendor_id: string;
-  uploads: number;
-  downloads: number;
-  total_requests: number;
-  error_count: number;
-  uptime_pct: number;
+  vendor_name: string;
+  all_time: {
+    total_activities: number;
+  };
+  last_30_days: {
+    total_activities: number;
+    successful: number;
+    failed: number;
+    success_rate: number;
+    avg_response_time_ms: number;
+    total_records_processed: number;
+    total_records_affected: number;
+    activity_breakdown: { activity_type: string; count: number }[];
+    resource_type_breakdown: { resource_type: string; count: number }[];
+    http_method_breakdown: { http_method: string; count: number }[];
+  };
 }
 
 export function fetchVendorStats(id: string) {
@@ -244,17 +255,15 @@ export function fetchVendorStats(id: string) {
 
 // ── Vendor Activities ──
 
-export interface VendorActivity {
-  timestamp: string;
-  method: string;
-  path: string;
-  status_code: number;
-}
-
 export function fetchVendorActivities(id: string, page = 1, limit = 20) {
-  return apiFetch<{ results: VendorActivity[]; total: number; page: number; limit: number }>(
-    `/v1/vendors/${id}/activities/?page=${page}&limit=${limit}`
-  );
+  return apiFetch<{ 
+    results: ActivityItem[]; 
+    total: number; 
+    page: number; 
+    limit: number;
+    vendor_id: string;
+    vendor_name: string;
+  }>(`/v1/vendors/${id}/activities/?page=${page}&limit=${limit}`);
 }
 
 // ── Generate Token ──

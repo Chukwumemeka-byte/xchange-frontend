@@ -12,6 +12,13 @@ import {
   Search,
   SlidersHorizontal,
   Store,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Clock,
+  Database,
+  AlertCircle,
+  Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -248,10 +255,15 @@ function AddVendorForm({ onBack }: { onBack: () => void }) {
 
 function VendorDetailView({ vendor, onBack }: { vendor: Vendor; onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<"overview" | "activity">("overview");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { data: vendorStats } = useVendorStats(vendor.id);
   const { data: vendorActivities } = useVendorActivities(vendor.id);
   const updateMutation = useUpdateVendor();
   const tokenMutation = useGenerateToken();
+  
+  const last30 = vendorStats?.last_30_days;
+  const uploadCount = last30?.activity_breakdown.find(b => b.activity_type === "data_submission")?.count ?? 0;
+  const downloadCount = last30?.activity_breakdown.find(b => b.activity_type === "translation")?.count ?? 0;
 
   const handleDeactivate = () => {
     updateMutation.mutate(
@@ -299,10 +311,10 @@ function VendorDetailView({ vendor, onBack }: { vendor: Vendor; onBack: () => vo
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Uptime (30d)", value: vendorStats ? `${vendorStats.uptime_pct.toFixed(2)}%` : "..." },
-              { label: "Total Requests", value: vendorStats ? String(vendorStats.total_requests) : "..." },
-              { label: "No. of Downloads", value: vendorStats ? String(vendorStats.downloads) : "..." },
-              { label: "No. of Uploads", value: vendorStats ? String(vendorStats.uploads) : "..." },
+              { label: "Uptime (30d)", value: last30 ? `${last30.success_rate.toFixed(2)}%` : "..." },
+              { label: "Total Requests", value: last30 ? String(last30.total_activities) : "..." },
+              { label: "No. of Downloads", value: last30 ? String(downloadCount) : "..." },
+              { label: "No. of Uploads", value: last30 ? String(uploadCount) : "..." },
             ].map((stat, i) => (
               <div key={i} className="p-5 border border-[#DFE1E6] rounded-[20px] bg-white space-y-3 shadow-sm">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[#060B1E]/30">{stat.label}</p>
@@ -351,50 +363,104 @@ function VendorDetailView({ vendor, onBack }: { vendor: Vendor; onBack: () => vo
                 </div>
               </div>
             ) : (
-              <div className="p-[3px] border border-[#DFE1E6] rounded-[28px] bg-white">
-                <div className="p-8 border border-[#DFE1E6] rounded-[24px] bg-white space-y-6">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] font-bold text-[#060B1E] font-interTight leading-none">Vendor Activities</h3>
-                    <HelpCircle size={14} className="text-[#060B1E]/30" />
-                  </div>
-                  <div className="border border-gray-50 rounded-[24px] overflow-hidden shadow-sm">
-                    <table className="w-full text-left">
-                      <thead className="bg-[#F9FAFB]/50 border-b border-[#DFE1E6]/50">
-                        <tr className="text-[#060B1E]/30 text-[9px] uppercase font-black tracking-[0.2em] whitespace-nowrap">
-                          <th className="px-6 py-4">Timestamp</th>
-                          <th className="px-6 py-4">Method</th>
-                          <th className="px-6 py-4">Path</th>
-                          <th className="px-6 py-4 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50 font-interTight">
-                        {(!vendorActivities?.results || vendorActivities.results.length === 0) && (
-                          <tr><td colSpan={4} className="px-6 py-8 text-center text-[#060B1E]/40 font-semibold">No activities yet</td></tr>
-                        )}
-                        {vendorActivities?.results.map((act, i) => (
-                          <tr key={i} className="text-[12px] font-bold text-[#060B1E] hover:bg-gray-50/50 transition-all">
-                            <td className="px-6 py-4 text-[#060B1E]/40 font-semibold">{new Date(act.timestamp).toLocaleString()}</td>
-                            <td className="px-6 py-4">
-                              <Badge className="bg-[#F0F2FE] text-[#7B86EA] border-none text-[9px] font-bold px-2 py-0.5 uppercase">{act.method}</Badge>
-                            </td>
-                            <td className="px-6 py-4 text-[#326D8E]">{act.path}</td>
-                            <td className="px-6 py-4 text-right">
-                              <div className={cn("flex items-center justify-end gap-1.5", act.status_code < 400 ? "text-[#129426]" : "text-[#DF1C41]")}>
-                                <div className={cn("w-1 h-1 rounded-full", act.status_code < 400 ? "bg-[#129426]" : "bg-[#DF1C41]")} />
-                                {act.status_code}
+                <div className="divide-y divide-[#DFE1E6]/50 border border-[#DFE1E6] rounded-[24px] overflow-hidden bg-white shadow-sm">
+                  {(!vendorActivities?.results || vendorActivities.results.length === 0) && (
+                    <div className="p-12 text-center text-[#060B1E]/40 font-semibold">No activities yet</div>
+                  )}
+                  {vendorActivities?.results.map((log) => {
+                    const isExpanded = expandedId === log.id;
+                    const ts = new Date(log.timestamp);
+                    const dateStr = ts.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+                    const timeStr = ts.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+                    return (
+                      <div key={log.id} className="border-b border-[#DFE1E6]/30 last:border-none">
+                        <div
+                          onClick={() => setExpandedId(isExpanded ? null : log.id)}
+                          className={cn(
+                            "p-6 flex items-center justify-between hover:bg-[#F9FAFB]/80 transition-all cursor-pointer group",
+                            isExpanded && "bg-[#F9FAFB] border-l-4 border-[#129426]"
+                          )}
+                        >
+                          <div className="flex items-center gap-5">
+                            <div className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm border",
+                              isExpanded ? "bg-[#129426] text-white border-[#129426]" : "bg-white text-[#060B1E]/60 border-[#DFE1E6]"
+                            )}>
+                              {log.activity_type === "data_submission" ? <Zap size={16} /> : <Activity size={16} />}
+                            </div>
+                            <div className="space-y-0.5">
+                              <h4 className="text-[14px] font-bold text-[#060B1E] font-interTight leading-tight">
+                                {log.activity_type_display}
+                              </h4>
+                              <p className="text-[11px] font-medium text-[#060B1E]/40 font-interTight flex items-center gap-1.5 leading-none">
+                                {dateStr}, {timeStr}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-6">
+                            <div className={cn(
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                              log.status === "success" ? "bg-[#C6EDE5] text-[#129426] border-[#129426]/10" : 
+                              log.status === "processing" ? "bg-blue-50 text-blue-600 border-blue-600/10" :
+                              "bg-[#FFEBEF] text-[#DF1C41] border-[#DF1C41]/10"
+                            )}>
+                              <div className={cn("w-1.5 h-1.5 rounded-full", 
+                                log.status === "success" ? "bg-[#129426]" : 
+                                log.status === "processing" ? "bg-blue-400" :
+                                "bg-[#DF1C41]"
+                              )} />
+                              {log.status_display}
+                            </div>
+                            {isExpanded ? <ChevronUp size={16} className="text-[#060B1E]/20" /> : <ChevronDown size={16} className="text-[#060B1E]/20" />}
+                          </div>
+                        </div>
+
+                        {/* Expanded Details */}
+                        <div className={cn(
+                          "overflow-hidden transition-all duration-300 ease-in-out bg-[#F9FAFB]/50",
+                          isExpanded ? "max-h-[500px] border-t border-[#DFE1E6]/30" : "max-h-0"
+                        )}>
+                          <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <VendorDetailItem icon={<Clock size={14} />} label="Duration" value={`${log.duration_ms}ms`} />
+                            <VendorDetailItem icon={<Activity size={14} />} label="Method & Status" value={`${log.http_method} ${log.http_status_code || ""}`} />
+                            <VendorDetailItem icon={<Database size={14} />} label="Records Result" value={`${log.records_processed} processed / ${log.records_affected} affected`} />
+                            <VendorDetailItem icon={<RefreshCcw size={14} />} label="Endpoint" value={log.endpoint} className="lg:col-span-2" />
+                            
+                            {log.error_message && (
+                              <div className="col-span-full mt-2 p-4 rounded-xl bg-red-50 border border-red-100 flex gap-3 text-red-600">
+                                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                  <p className="text-[11px] font-black uppercase tracking-wider">Error Message</p>
+                                  <p className="text-[13px] font-medium leading-relaxed">{log.error_message}</p>
+                                </div>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
             )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function VendorDetailItem({ icon, label, value, className }: { icon: React.ReactNode; label: string; value: string | number; className?: string }) {
+  return (
+    <div className={cn("space-y-2", className)}>
+      <div className="flex items-center gap-2 text-[#060B1E]/40">
+        {icon}
+        <span className="text-[10px] font-black uppercase tracking-widest leading-none">{label}</span>
+      </div>
+      <p className="text-[14px] font-bold text-[#060B1E] font-interTight truncate" title={String(value)}>
+        {value || "N/A"}
+      </p>
     </div>
   );
 }

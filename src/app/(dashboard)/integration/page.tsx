@@ -143,11 +143,11 @@ export default function IntegrationPage() {
                                     <tr><td colSpan={3} className="px-8 py-8 text-center text-[#060B1E]/40 font-semibold">No token activity yet</td></tr>
                                 )}
                                 {tokenRecords.map((rec, i) => {
-                                    const isSuccess = rec.status_code < 400;
+                                    const isSuccess = (rec.http_status_code || 0) < 400;
                                     return (
                                         <tr key={i} className="hover:bg-gray-50/30 transition-all whitespace-nowrap group">
                                             <td className="px-8 py-6 font-semibold text-[#060B1E]/60 text-[14px]">
-                                                {rec.method} {rec.path}
+                                                {rec.http_method} {rec.endpoint}
                                             </td>
                                             <td className="px-8 py-6 font-semibold text-[#060B1E]/80 text-[14px]">
                                                 {new Date(rec.timestamp).toLocaleString()}
