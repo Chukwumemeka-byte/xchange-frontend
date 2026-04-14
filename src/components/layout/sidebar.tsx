@@ -8,7 +8,7 @@ import {
     LayoutDashboard,
     Users,
     History,
-    FileText,
+    // FileText,
     Activity,
     Puzzle,
     ChevronLeft,
