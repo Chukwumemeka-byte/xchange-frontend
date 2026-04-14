@@ -34,7 +34,7 @@ const userItems: SidebarItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Integration", href: "/integration", icon: Puzzle },
     { title: "Activities", href: "/activities", icon: Activity },
-    { title: "Documentation", href: "/documentation", icon: FileText },
+    // { title: "Documentation", href: "/documentation", icon: FileText },
 ];
 
 export function Sidebar() {

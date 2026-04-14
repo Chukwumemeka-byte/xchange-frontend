@@ -42,6 +42,8 @@ export default function DocumentationPage() {
         return <DocDetailView onBack={() => setSelectedDoc(null)} activeTab={activeTab} setActiveTab={setActiveTab} />;
     }
 
+    return null;
+    if (false) {
     return (
         <div className="space-y-8 pb-20">
             {/* Header */}
@@ -93,6 +95,7 @@ export default function DocumentationPage() {
             </div>
         </div>
     );
+    }
 }
 
 interface DocCardProps {
